@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OSINT Tool</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <h1>OSINT Tool</h1>
+
+    <form action="/" method="post">
+        <label for="name">Name:</label><br>
+        <input type="text" id="name" name="name"><br><br>
+
+        <label for="email">Email:</label><br>
+        <input type="email" id="email" name="email"><br><br>
+
+        <label for="phone">Phone Number:</label><br>
+        <input type="tel" id="phone" name="phone"><br><br>
+
+        <input type="submit" value="Search">
+    </form>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+
+    {% if results %}
+    <div id="results">
+        <h2>Results</h2>
+
+        {% if results.google_dorks %}
+        <h3>Google Dorks</h3>
+        <ul>
+            {% for dork in results.google_dorks %}
+            <li><a href="{{ dork }}" target="_blank">{{ dork }}</a></li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+
+        {% if results.email_analysis %}
+        <h3>Email Analysis</h3>
+        <ul>
+            <li>Valid Syntax: {{ results.email_analysis.valid_syntax }}</li>
+            <li>Can Receive Emails (MX Records): {{ results.email_analysis.has_mx_records }}</li>
+        </ul>
+        {% endif %}
+
+        {% if results.phone_analysis %}
+        <h3>Phone Number Analysis</h3>
+        <ul>
+            <li>Is Valid Number: {{ results.phone_analysis.is_valid }}</li>
+            <li>Country: {{ results.phone_analysis.country }}</li>
+            <li>Carrier: {{ results.phone_analysis.carrier }}</li>
+        </ul>
+        {% endif %}
+
+        {% if results.open_sanctions %}
+        <h3>Open Sanctions</h3>
+        <p>Found {{ results.open_sanctions.total.value }} potential matches.</p>
+        {% if results.open_sanctions.results %}
+        <ul>
+            {% for person in results.open_sanctions.results %}
+            <li><a href="https://www.opensanctions.org/entities/{{ person.id }}/" target="_blank">{{ person.caption }}</a></li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+        {% endif %}
+
+        {% if results.shodan %}
+        <h3>Shodan (from email domain)</h3>
+        <ul>
+            <li>IP Address: {{ results.shodan.ip_str }}</li>
+            <li>Organization: {{ results.shodan.org }}</li>
+            <li>Hostnames: {{ results.shodan.hostnames | join(', ') }}</li>
+            <li>Open Ports: {{ results.shodan.ports | join(', ') }}</li>
+        </ul>
+        {% endif %}
+
+    </div>
+    {% endif %}
+</body>
+</html>
